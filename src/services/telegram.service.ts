@@ -268,30 +268,36 @@ export class TelegramService {
   }
   async getRandomPidor(group_id: number) {
     const currentCoolUser = await InfoModel.findOne({
-        currentCool: true,
+      currentCool: true,
+      group_id,
+    });
+    let users;
+    if (!currentCoolUser) {
+      const allUsers = await UserModel.find({ group_id });
+      users = allUsers;
+    } else {
+      users = await UserModel.find({
         group_id,
+        _id: currentCoolUser._id,
       });
-      let users;
-      if (!currentCoolUser) {
-        const allUsers = await UserModel.find({ group_id });
-        users = allUsers;
-      } else {
-        users = await UserModel.find({
-          group_id,
-          _id: currentCoolUser._id,
-        });
-      }
-  
-      if (users.length === 0) {
-        console.log("users", users);
-        // Handle case when no eligible users are found
-        return null;
-      }
-  
-      const randomIndex = Math.floor(Math.random() * users.length);
-      const randomUser = users[randomIndex];
-  
-      return randomUser;
+    }
+
+    if (users.length === 0) {
+      console.log("users", users);
+      // Handle case when no eligible users are found
+      return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * users.length);
+    const randomUser = users[randomIndex];
+
+    await InfoModel.findOneAndUpdate(
+      { group_id: randomUser?.group_id },
+      { currentCool: randomUser?.user_id },
+      { sort: { date_created: -1 }, upsert: true, new: true }
+    );
+
+    return randomUser;
   }
   async getPidorOfTheDay(group_id: number) {
     const user = await UserModel.findOne({ role: "pidor", group_id });
@@ -354,6 +360,12 @@ export class TelegramService {
 
     const randomIndex = Math.floor(Math.random() * users.length);
     const randomUser = users[randomIndex];
+
+    await InfoModel.findOneAndUpdate(
+      { group_id: randomUser?.group_id },
+      { currentCool: randomUser?.user_id },
+      { sort: { date_created: -1 }, upsert: true, new: true }
+    );
 
     return randomUser;
   }
