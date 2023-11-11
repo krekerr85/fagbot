@@ -305,6 +305,7 @@ export class TelegramService {
       // Проверяем, существует ли пользователь с такими данными
       const existingUser = await UserModel.findOne({
         user_id: ctx.from?.id,
+        group_id: ctx.chat.id,
       });
       // Если пользователь существует, возвращаем его данные
       if (existingUser) {
