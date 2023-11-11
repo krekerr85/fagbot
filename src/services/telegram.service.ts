@@ -42,7 +42,6 @@ export class TelegramService {
       );
     });
     setInterval(async () => {}, 60 * 60 * 1000);
-    this.reload();
     this.bot.on("callback_query", async (ctx) => {
       console.log(ctx.update.callback_query);
     });
