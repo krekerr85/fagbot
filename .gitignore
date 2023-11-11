@@ -1,5 +1,5 @@
-node_modules
-ngrok
 .env.development
 .env.production
 .env.local-services
+ngrok.exe
+node_modules
