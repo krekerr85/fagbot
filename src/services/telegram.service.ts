@@ -14,7 +14,7 @@ export class TelegramService {
     });
 
     this.bot.start(async (ctx) => {
-      console.log(ctx)
+      console.log(ctx.from)
       this.reload();
 
       await ctx.reply(
