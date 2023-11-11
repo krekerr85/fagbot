@@ -2,6 +2,7 @@ import { botT, ctxT } from "../types/telegramType";
 import { sleep } from "../utils/functions";
 import { UserModel } from "../models/user.model";
 import { InfoModel } from "../models/info.model";
+import { set } from "mongoose";
 
 export class TelegramService {
   constructor(private readonly bot: botT) {
@@ -37,7 +38,10 @@ export class TelegramService {
         { scope: { type: "all_private_chats" } }
       );
     });
-
+    setInterval(async () => {
+        
+    }, 60 * 60 * 1000)
+    this.reload();
     this.bot.on("callback_query", async (ctx) => {
       console.log(ctx.update.callback_query);
     });
@@ -272,5 +276,12 @@ export class TelegramService {
   }
   async deleteUser(ctx: any) {
     await UserModel.findOneAndDelete({ user_id: ctx.from?.id });
+  }
+
+  async reload(){
+    InfoModel.findOneAndUpdate({}, {
+      currentPidor: null,
+      currentCool: null
+    }, { upsert: true, new: true })
   }
 }
