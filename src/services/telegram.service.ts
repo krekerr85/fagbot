@@ -265,7 +265,7 @@ export class TelegramService {
   }
   async getRandomPidor(group_id: number) {
     const currentCoolUser = await InfoModel.findOne({
-      currentCool: true,
+      currentCool: { $ne: null },
       group_id,
     });
     let users;
@@ -275,7 +275,7 @@ export class TelegramService {
     } else {
       users = await UserModel.find({
         group_id,
-        _id: currentCoolUser._id,
+        _id: { $ne:currentCoolUser._id},
       });
     }
 
@@ -341,7 +341,7 @@ export class TelegramService {
   }
   async getRandomCool(group_id: number) {
     const currentPidorUser = await InfoModel.findOne({
-      currentPidor: true,
+      currentPidor: { $ne: null },
       group_id,
     });
     let users;
@@ -351,7 +351,7 @@ export class TelegramService {
     } else {
       users = await UserModel.find({
         group_id,
-        _id: currentPidorUser._id,
+        _id: { $ne:currentPidorUser._id},
       });
     }
 
