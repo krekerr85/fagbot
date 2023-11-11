@@ -290,7 +290,7 @@ export class TelegramService {
 
     await InfoModel.findOneAndUpdate(
       { group_id: randomUser?.group_id },
-      { currentCool: randomUser?.user_id },
+      { currentPidor: randomUser?.user_id },
       { sort: { date_created: -1 }, upsert: true, new: true }
     );
 
