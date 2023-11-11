@@ -8,11 +8,12 @@ export class TelegramService {
     this.init();
   }
   async init() {
-    this.reload();
+    
     cron.schedule("0 0 * * *", this.reload, {
       timezone: "Europe/Moscow",
     });
     this.bot.start(async (ctx) => {
+        this.reload();
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
       );
