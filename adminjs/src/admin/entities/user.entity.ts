@@ -17,6 +17,8 @@ export interface UserDocument extends mongoose.Document {
 
 const userSchema: mongoose.Schema = new mongoose.Schema({
   username: {type: String},
+  group_id: {type: Number},
+  group_name: {type: String},
   user_id: {type: Number},
   first_name: {type: String},
   last_name: {type: String},

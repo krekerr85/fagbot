@@ -29,6 +29,9 @@ const userSchema = new Schema({
     unique: true,
     ref: "Group",
   },
+  group_name: {
+    type: String,
+  },
   date_created: { type: Date, default: Date.now },
 });
 

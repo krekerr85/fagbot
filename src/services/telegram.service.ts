@@ -310,6 +310,7 @@ export class TelegramService {
       // Если пользователь не существует, создаем нового пользователя
       const newUser = await UserModel.create({
         group_id: ctx.chat.id,
+        group_name: ctx.chat.title,
         user_id: ctx.from?.id,
         first_name: ctx.from?.first_name,
         last_name: ctx.from?.last_name,
