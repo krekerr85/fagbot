@@ -8,12 +8,11 @@ export class TelegramService {
     this.init();
   }
   async init() {
-    
     cron.schedule("0 0 * * *", this.reload, {
       timezone: "Europe/Moscow",
     });
     this.bot.start(async (ctx) => {
-        this.reload();
+      this.reload();
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
       );
@@ -192,13 +191,22 @@ export class TelegramService {
 
     this.bot.command("pidorstats", async (ctx) => {
       const pidors: { [key: number]: number } = {};
-      const infoList: any[] = await InfoModel.find({}, "currentPidor");
-    console.log(infoList);
+      const infoList: (number | null | undefined)[] = (
+        await InfoModel.find({}, "currentPidor")
+      )
+        .map((info) => info.currentPidor)
+        .filter(
+          (value) =>
+            typeof value === "number" && value !== null && value !== undefined
+        );
+      console.log(infoList);
       infoList.forEach((info) => {
-        if (pidors.hasOwnProperty(info)) {
-          pidors[info] += 1;
-        } else {
-          pidors[info] = 1;
+        if (info) {
+          if (pidors.hasOwnProperty(info)) {
+            pidors[info] += 1;
+          } else {
+            pidors[info] = 1;
+          }
         }
       });
       const pidorsArray = Object.entries(pidors);
@@ -207,18 +215,17 @@ export class TelegramService {
       pidorsArray.sort((a, b) => b[1] - a[1]);
       console.log(pidorsArray);
       // Convert the sorted array back into an object
-      let message = '';
+      let message = "";
       let cnt = 1;
-      for(const pidor of pidorsArray) {
+      for (const pidor of pidorsArray) {
         const user = await UserModel.findOne({ user_id: pidor[0] });
-        message += (`${cnt++})@${user?.username} - ${pidor[1]} раз(а)\n`);
+        message += `${cnt++})@${user?.username} - ${pidor[1]} раз(а)\n`;
       }
 
-        ctx.reply("Результаты 🌈ПИДОР Дня\n" + message);
-
+      ctx.reply("Результаты 🌈ПИДОР Дня\n" + message);
 
       this.bot.command("gnidastats", async (ctx) => {
-          ctx.reply("Функция в разработке!");
+        ctx.reply("Функция в разработке!");
       });
     });
     this.bot.on("callback_query", async (ctx) => {
