@@ -15,9 +15,6 @@ export class TelegramService {
     });
 
     this.bot.start(async (ctx) => {
-      console.log(ctx.from);
-      console.log(ctx.chat);
-
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
       );
@@ -301,6 +298,9 @@ export class TelegramService {
   }
   async getPidorOfTheDay(group_id: number) {
     const user = await UserModel.findOne({ role: "pidor", group_id });
+    if (!user) {
+      return null;
+    }
     await InfoModel.findOneAndUpdate(
       { group_id: user?.group_id },
       { currentPidor: user?.user_id },
@@ -329,6 +329,9 @@ export class TelegramService {
   }
   async getCoolOfTheDay(group_id: number) {
     const user = await UserModel.findOne({ role: "cool", group_id });
+    if (!user) {
+      return null;
+    }
     await InfoModel.findOneAndUpdate(
       { group_id: user?.group_id },
       { currentCool: user?.user_id },
