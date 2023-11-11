@@ -15,7 +15,7 @@ const userSchema = new Schema({
   username: String,
   user_id: {
     type: Number,
-    unique: true,
+    unique: false,
     required: true,
   },
   first_name: String,
@@ -26,7 +26,8 @@ const userSchema = new Schema({
   },
   group_id: {
     type: Number,
-    unique: true,
+    unique: false,
+    required: true,
     ref: "Group",
   },
   group_name: {
