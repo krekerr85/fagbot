@@ -7,12 +7,16 @@ export class TelegramService {
   constructor(private readonly bot: botT) {
     this.init();
   }
+
   async init() {
     cron.schedule("0 0 * * *", this.reload, {
       timezone: "Europe/Moscow",
     });
+
     this.bot.start(async (ctx) => {
+      console.log(ctx)
       this.reload();
+
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
       );
@@ -30,21 +34,15 @@ export class TelegramService {
             description:
               "Запустить барабан усатого, чтобы узнать кто пидор дня.",
           },
-          // {
-          //   command: "/gnida",
-          //   description: "Запустить барабан усатого, чтобы узнать кто гнида дня.",
-          // },
           { command: "/stats", description: "Результаты игры красавчика." },
           { command: "/pidorstats", description: "Результаты игры пидора." },
-          // { command: "/gnidastats", description: "Результаты игры гниды." },
         ],
         { scope: { type: "all_private_chats" } }
       );
     });
+
     setInterval(async () => {}, 60 * 60 * 1000);
-    this.bot.on("callback_query", async (ctx) => {
-      console.log(ctx.update.callback_query);
-    });
+
     this.bot.command("reg", async (ctx) => {
       await this.createUser(ctx);
       ctx.reply("Отлично, ты в игре");
@@ -150,77 +148,42 @@ export class TelegramService {
       return;
     });
 
-    // this.bot.command("gnida", async (ctx) => {
-    //   const prevPidorDay = await this.currentPidorOfTheDay();
-    //   if (!prevPidorDay) {
-    //     const pidorDay = await this.getPidorOfTheDay();
-    //     if (!pidorDay) {
-    //       ctx.reply("ВНИМАНИЕ 🔥");
-    //       await sleep(3000);
-    //       ctx.reply("СПАСИБО ЗА ВНИМАНИЕ 🔥");
-    //       return;
-    //     }
-    //     const { last_name, first_name, username } = pidorDay;
-    //     ctx.reply("ВНИМАНИЕ 🔥");
-    //     await sleep(2000);
-    //     ctx.reply("ФЕДЕРАЛЬНЫЙ 🔍 РОЗЫСК ПИДОРА 🚨");
-    //     await sleep(2000);
-    //     ctx.reply("4 - спутник запущен 🚀");
-    //     await sleep(2000);
-    //     ctx.reply("3 - сводки Интерпола проверены 🚓");
-    //     await sleep(2000);
-    //     ctx.reply("2 - твои друзья опрошены 🙅");
-    //     await sleep(2000);
-    //     ctx.reply("1 - твой профиль в соцсетях проанализирован 🙀");
-    //     await sleep(2000);
-
-    //     ctx.reply(
-    //       `🎉 Сегодня ПИДОР 🌈 дня - ${last_name} ${first_name} (@${username})`
-    //     );
-    //     return;
-    //   }
-    //   const { last_name, first_name, username } = prevPidorDay;
-    //   ctx.reply(
-    //     `🎉 Сегодня ПИДОР 🌈 дня - ${last_name} ${first_name} (@${username})`
-    //   );
-    // });
-
     this.bot.command("stats", async (ctx) => {
-        const cools: { [key: number]: number } = {};
-        const infoList: (number | null | undefined)[] = (
-          await InfoModel.find({}, "currentCool")
-        )
-          .map((info) => info.currentCool)
-          .filter(
-            (value) =>
-              typeof value === "number" && value !== null && value !== undefined
-          );
-      
-        infoList.forEach((info) => {
-          if (info) {
-            if (cools.hasOwnProperty(info)) {
-              cools[info] += 1;
-            } else {
-              cools[info] = 1;
-            }
+      const cools: { [key: number]: number } = {};
+      const infoList: (number | null | undefined)[] = (
+        await InfoModel.find({}, "currentCool")
+      )
+        .map((info) => info.currentCool)
+        .filter(
+          (value) =>
+            typeof value === "number" && value !== null && value !== undefined
+        );
+
+      infoList.forEach((info) => {
+        if (info) {
+          if (cools.hasOwnProperty(info)) {
+            cools[info] += 1;
+          } else {
+            cools[info] = 1;
           }
-        });
-      
-        const coolsArray = Object.entries(cools);
-      
-        // Sort the array based on the values in descending order
-        coolsArray.sort((a, b) => b[1] - a[1]);
-      
-        // Convert the sorted array back into an object
-        let message = "";
-        let cnt = 1;
-        for (const cool of coolsArray) {
-          const user = await UserModel.findOne({ user_id: cool[0] });
-          message += `${cnt++}) @${user?.username} - ${cool[1]} раз(а)\n`;
         }
-      
-        ctx.reply("🎉 Результаты Красавчик Дня\n" + message);
       });
+
+      const coolsArray = Object.entries(cools);
+
+      // Sort the array based on the values in descending order
+      coolsArray.sort((a, b) => b[1] - a[1]);
+
+      // Convert the sorted array back into an object
+      let message = "";
+      let cnt = 1;
+      for (const cool of coolsArray) {
+        const user = await UserModel.findOne({ user_id: cool[0] });
+        message += `${cnt++}) @${user?.username} - ${cool[1]} раз(а)\n`;
+      }
+
+      ctx.reply("🎉 Результаты Красавчик Дня\n" + message);
+    });
 
     this.bot.command("pidorstats", async (ctx) => {
       const pidors: { [key: number]: number } = {};
@@ -260,9 +223,6 @@ export class TelegramService {
       this.bot.command("gnidastats", async (ctx) => {
         ctx.reply("Функция в разработке!");
       });
-    });
-    this.bot.on("callback_query", async (ctx) => {
-      //await this.updateState(ctx);
     });
   }
 

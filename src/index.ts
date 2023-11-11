@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import { Telegraf } from "telegraf";
 import { TelegramService } from "./services/telegram.service";
-import setupTelegramRoutes from "./routes/telegram.router";
 import { connectDB } from "./db";
 import cors from "cors";
 import path from "path";
@@ -22,7 +21,6 @@ const bot = new Telegraf(BOT_TOKEN);
 bot.launch();
 const telegramService = new TelegramService(bot);
 // Set up routes
-app.use("/api/telegram", setupTelegramRoutes(telegramService));
 
 // Set up error handling middleware
 app.use((err: Error, req: Request, res: Response) => {
