@@ -232,12 +232,16 @@ export class TelegramService {
 
   async createGroup(chat: any) {
     if (chat.type === "group") {
-      GroupModel.create({
-        group_id: chat.id,
-        group_name: chat.title,
-        date_created: new Date(),
-      });
-      this.reload(chat.id);
+      const existingGroup = await GroupModel.findOne({ group_id: chat.id });
+
+      if (!existingGroup) {
+        await GroupModel.create({
+          group_id: chat.id,
+          group_name: chat.title,
+          date_created: new Date(),
+        });
+        this.reload(chat.id);
+      }
     }
   }
   async currentPidorOfTheDay(group_id: number) {
