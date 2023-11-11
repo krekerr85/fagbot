@@ -279,9 +279,10 @@ export class TelegramService {
   }
 
   async reload(){
-    InfoModel.findOneAndUpdate({}, {
+    const res = await InfoModel.findOneAndUpdate({}, {
       currentPidor: null,
       currentCool: null
     }, { upsert: true, new: true })
+    console.log(res)
   }
 }
