@@ -192,8 +192,8 @@ export class TelegramService {
 
     this.bot.command("pidorstats", async (ctx) => {
       const pidors: { [key: number]: number } = {};
-      const infoList: number[] = await InfoModel.find({}, "currentPidor");
-
+      const infoList: any[] = await InfoModel.find({}, "currentPidor");
+    console.log(infoList);
       infoList.forEach((info) => {
         if (pidors.hasOwnProperty(info)) {
           pidors[info] += 1;
@@ -205,7 +205,7 @@ export class TelegramService {
 
       // Sort the array based on the values in descending order
       pidorsArray.sort((a, b) => b[1] - a[1]);
-
+      console.log(pidorsArray);
       // Convert the sorted array back into an object
       let message = '';
       let cnt = 1;
