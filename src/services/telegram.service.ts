@@ -2,13 +2,16 @@ import { botT, ctxT } from "../types/telegramType";
 import { sleep } from "../utils/functions";
 import { UserModel } from "../models/user.model";
 import { InfoModel } from "../models/info.model";
-import { set } from "mongoose";
-
+import cron from "node-cron";
 export class TelegramService {
   constructor(private readonly bot: botT) {
     this.init();
   }
   async init() {
+    this.reload();
+    cron.schedule("0 0 * * *", this.reload, {
+      timezone: "Europe/Moscow",
+    });
     this.bot.start(async (ctx) => {
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
@@ -38,9 +41,7 @@ export class TelegramService {
         { scope: { type: "all_private_chats" } }
       );
     });
-    setInterval(async () => {
-        
-    }, 60 * 60 * 1000)
+    setInterval(async () => {}, 60 * 60 * 1000);
     this.reload();
     this.bot.on("callback_query", async (ctx) => {
       console.log(ctx.update.callback_query);
@@ -203,7 +204,10 @@ export class TelegramService {
   }
 
   async currentPidorOfTheDay() {
-    const info = await InfoModel.findOne({});
+    const info = await InfoModel.findOne({})
+      .sort({ date_created: -1 })
+      .limit(1);
+
     if (!info) {
       return false;
     }
@@ -218,16 +222,17 @@ export class TelegramService {
     const user = await UserModel.findOne({ role: "pidor" });
     await InfoModel.findOneAndUpdate(
       {},
-      {
-        currentPidor: user?.user_id,
-      },
-      { upsert: true, new: true }
+      { currentPidor: user?.user_id },
+      { sort: { date_created: -1 }, upsert: true, new: true }
     );
     return user;
   }
 
   async currentCoolOfTheDay() {
-    const info = await InfoModel.findOne({});
+    const info = await InfoModel.findOne({})
+      .sort({ date_created: -1 })
+      .limit(1);
+
     if (!info) {
       return false;
     }
@@ -242,10 +247,8 @@ export class TelegramService {
     const user = await UserModel.findOne({ role: "cool" });
     await InfoModel.findOneAndUpdate(
       {},
-      {
-        currentCool: user?.user_id,
-      },
-      { upsert: true, new: true }
+      { currentCool: user?.user_id },
+      { sort: { date_created: -1 }, upsert: true, new: true }
     );
     return user;
   }
@@ -278,11 +281,10 @@ export class TelegramService {
     await UserModel.findOneAndDelete({ user_id: ctx.from?.id });
   }
 
-  async reload(){
-    const res = await InfoModel.findOneAndUpdate({}, {
+  async reload() {
+    const res = await InfoModel.create({
       currentPidor: null,
-      currentCool: null
-    }, { upsert: true, new: true })
-    console.log(res)
+      currentCool: null,
+    });
   }
 }
