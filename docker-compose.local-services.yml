@@ -1,0 +1,20 @@
+version: '3.3'
+volumes:
+  fagbot-mongo:
+    name: "fagbot-mongo"
+services:
+    mongo:
+        ports:
+            - '${MONGO_PORT}:27017'
+        container_name: fagbot-mongo
+        restart: always
+        logging:
+            options:
+                max-size: 1g
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+            - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+        image: mongo
+        volumes:
+            - fagbot-mongo:/data/db
