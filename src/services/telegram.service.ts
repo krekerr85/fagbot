@@ -59,12 +59,16 @@ export class TelegramService {
       const { id } = ctx.chat;
       const prevCoolDay = await this.currentCoolOfTheDay(id);
       if (!prevCoolDay) {
-        const coolDay = await this.getCoolOfTheDay(id);
+        let coolDay = await this.getCoolOfTheDay(id);
         if (!coolDay) {
-          ctx.reply("ВНИМАНИЕ 🔥");
-          await sleep(3000);
-          ctx.reply("СПАСИБО ЗА ВНИМАНИЕ 🔥");
-          return;
+          const randomCool = await this.getRandomCool(id);
+          if (!randomCool) {
+            ctx.reply("ВНИМАНИЕ 🔥");
+            await sleep(3000);
+            ctx.reply("СПАСИБО ЗА ВНИМАНИЕ 🔥");
+            return;
+          }
+          coolDay = randomCool;
         }
         const { last_name, first_name, username } = coolDay;
         ctx.reply("КРУТИМ БАРАБАН");
@@ -107,12 +111,16 @@ export class TelegramService {
       const { id } = ctx.chat;
       const prevPidorDay = await this.currentPidorOfTheDay(id);
       if (!prevPidorDay) {
-        const pidorDay = await this.getPidorOfTheDay(id);
+        let pidorDay = await this.getPidorOfTheDay(id);
         if (!pidorDay) {
-          ctx.reply("ВНИМАНИЕ 🔥");
-          await sleep(3000);
-          ctx.reply("СПАСИБО ЗА ВНИМАНИЕ 🔥");
-          return;
+          const randomPidor = await this.getRandomPidor(id);
+          if (!randomPidor) {
+            ctx.reply("ВНИМАНИЕ 🔥");
+            await sleep(3000);
+            ctx.reply("СПАСИБО ЗА ВНИМАНИЕ 🔥");
+            return;
+          }
+          pidorDay = randomPidor;
         }
         const { last_name, first_name, username } = pidorDay;
         ctx.reply("ВНИМАНИЕ 🔥");
@@ -223,10 +231,6 @@ export class TelegramService {
       }
 
       ctx.reply("Результаты 🌈ПИДОР Дня\n" + message);
-
-      this.bot.command("gnidastats", async (ctx) => {
-        ctx.reply("Функция в разработке!");
-      });
     });
   }
 
@@ -261,6 +265,29 @@ export class TelegramService {
     });
 
     return user;
+  }
+  async getRandomPidor(group_id: number) {
+    const currentCoolUser = await InfoModel.findOne({
+      currentCool: true,
+      group_id,
+    });
+    if (!currentCoolUser) {
+      return null;
+    }
+    const users = await UserModel.find({
+      group_id,
+      _id: { $nin: currentCoolUser._id },
+    });
+
+    if (users.length === 0) {
+      // Handle case when no eligible users are found
+      return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * users.length);
+    const randomUser = users[randomIndex];
+
+    return randomUser;
   }
   async getPidorOfTheDay(group_id: number) {
     const user = await UserModel.findOne({ role: "pidor", group_id });
@@ -298,6 +325,29 @@ export class TelegramService {
       { sort: { date_created: -1 }, upsert: true, new: true }
     );
     return user;
+  }
+  async getRandomCool(group_id: number) {
+    const currentPidorUser = await InfoModel.findOne({
+      currentPidor: true,
+      group_id,
+    });
+    if (!currentPidorUser) {
+      return null;
+    }
+    const users = await UserModel.find({
+      group_id,
+      _id: { $nin: currentPidorUser._id },
+    });
+
+    if (users.length === 0) {
+      // Handle case when no eligible users are found
+      return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * users.length);
+    const randomUser = users[randomIndex];
+
+    return randomUser;
   }
 
   async createUser(ctx: any) {
