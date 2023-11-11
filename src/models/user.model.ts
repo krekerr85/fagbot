@@ -8,7 +8,7 @@ interface IUser extends Document {
   last_name: string;
   role: string;
   date_created: Date;
-  group_id: Types.ObjectId; // Reference to Group model
+  group_id: number; // Reference to Group model
 }
 
 const userSchema = new Schema({
@@ -25,7 +25,7 @@ const userSchema = new Schema({
     default: "user",
   },
   group_id: {
-    type: Schema.Types.ObjectId,
+    type: Number,
     unique: true,
     ref: "Group",
   },
