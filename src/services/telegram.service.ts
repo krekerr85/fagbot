@@ -3,20 +3,20 @@ import { sleep } from "../utils/functions";
 import { UserModel } from "../models/user.model";
 import { InfoModel } from "../models/info.model";
 import cron from "node-cron";
+import { GroupModel } from "../models/group.model";
 export class TelegramService {
   constructor(private readonly bot: botT) {
     this.init();
   }
 
   async init() {
-    cron.schedule("0 0 * * *", this.reload, {
+    cron.schedule("0 0 * * *", this.reloadAll, {
       timezone: "Europe/Moscow",
     });
 
     this.bot.start(async (ctx) => {
-      console.log(ctx.from)
-      console.log(ctx.chat)
-      this.reload();
+      console.log(ctx.from);
+      console.log(ctx.chat);
 
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
@@ -40,6 +40,7 @@ export class TelegramService {
         ],
         { scope: { type: "all_private_chats" } }
       );
+      await this.createGroup(ctx.chat);
     });
 
     setInterval(async () => {}, 60 * 60 * 1000);
@@ -55,9 +56,10 @@ export class TelegramService {
     });
 
     this.bot.command("run", async (ctx) => {
-      const prevCoolDay = await this.currentCoolOfTheDay();
+      const { id } = ctx.chat;
+      const prevCoolDay = await this.currentCoolOfTheDay(id);
       if (!prevCoolDay) {
-        const coolDay = await this.getCoolOfTheDay();
+        const coolDay = await this.getCoolOfTheDay(id);
         if (!coolDay) {
           ctx.reply("ВНИМАНИЕ 🔥");
           await sleep(3000);
@@ -102,9 +104,10 @@ export class TelegramService {
     });
 
     this.bot.command("pidor", async (ctx) => {
-      const prevPidorDay = await this.currentPidorOfTheDay();
+      const { id } = ctx.chat;
+      const prevPidorDay = await this.currentPidorOfTheDay(id);
       if (!prevPidorDay) {
-        const pidorDay = await this.getPidorOfTheDay();
+        const pidorDay = await this.getPidorOfTheDay(id);
         if (!pidorDay) {
           ctx.reply("ВНИМАНИЕ 🔥");
           await sleep(3000);
@@ -152,7 +155,7 @@ export class TelegramService {
     this.bot.command("stats", async (ctx) => {
       const cools: { [key: number]: number } = {};
       const infoList: (number | null | undefined)[] = (
-        await InfoModel.find({}, "currentCool")
+        await InfoModel.find({ group_id: ctx.chat.id }, "currentCool")
       )
         .map((info) => info.currentCool)
         .filter(
@@ -189,7 +192,7 @@ export class TelegramService {
     this.bot.command("pidorstats", async (ctx) => {
       const pidors: { [key: number]: number } = {};
       const infoList: (number | null | undefined)[] = (
-        await InfoModel.find({}, "currentPidor")
+        await InfoModel.find({ group_id: ctx.chat.id }, "currentPidor")
       )
         .map((info) => info.currentPidor)
         .filter(
@@ -227,8 +230,18 @@ export class TelegramService {
     });
   }
 
-  async currentPidorOfTheDay() {
-    const info = await InfoModel.findOne({})
+  async createGroup(chat: any) {
+    if (chat.type === "group") {
+      GroupModel.create({
+        group_id: chat.id,
+        group_name: chat.title,
+        date_created: new Date(),
+      });
+      this.reload(chat.id);
+    }
+  }
+  async currentPidorOfTheDay(group_id: number) {
+    const info = await InfoModel.findOne({ group_id })
       .sort({ date_created: -1 })
       .limit(1);
 
@@ -238,22 +251,25 @@ export class TelegramService {
     if (!info?.currentPidor) {
       return false;
     }
-    const user = await UserModel.findOne({ user_id: info.currentPidor });
+    const user = await UserModel.findOne({
+      user_id: info.currentPidor,
+      group_id,
+    });
 
     return user;
   }
-  async getPidorOfTheDay() {
-    const user = await UserModel.findOne({ role: "pidor" });
+  async getPidorOfTheDay(group_id: number) {
+    const user = await UserModel.findOne({ role: "pidor", group_id });
     await InfoModel.findOneAndUpdate(
-      {},
+      { group_id: user?.group_id },
       { currentPidor: user?.user_id },
       { sort: { date_created: -1 }, upsert: true, new: true }
     );
     return user;
   }
 
-  async currentCoolOfTheDay() {
-    const info = await InfoModel.findOne({})
+  async currentCoolOfTheDay(group_id: number) {
+    const info = await InfoModel.findOne({ group_id })
       .sort({ date_created: -1 })
       .limit(1);
 
@@ -263,14 +279,17 @@ export class TelegramService {
     if (!info?.currentCool) {
       return false;
     }
-    const user = await UserModel.findOne({ user_id: info.currentCool });
+    const user = await UserModel.findOne({
+      user_id: info.currentCool,
+      group_id,
+    });
 
     return user;
   }
-  async getCoolOfTheDay() {
-    const user = await UserModel.findOne({ role: "cool" });
+  async getCoolOfTheDay(group_id: number) {
+    const user = await UserModel.findOne({ role: "cool", group_id });
     await InfoModel.findOneAndUpdate(
-      {},
+      { group_id: user?.group_id },
       { currentCool: user?.user_id },
       { sort: { date_created: -1 }, upsert: true, new: true }
     );
@@ -290,6 +309,7 @@ export class TelegramService {
 
       // Если пользователь не существует, создаем нового пользователя
       const newUser = await UserModel.create({
+        group_id: ctx.chat.id,
         user_id: ctx.from?.id,
         first_name: ctx.from?.first_name,
         last_name: ctx.from?.last_name,
@@ -302,13 +322,24 @@ export class TelegramService {
     }
   }
   async deleteUser(ctx: any) {
-    await UserModel.findOneAndDelete({ user_id: ctx.from?.id });
+    await UserModel.findOneAndDelete({
+      user_id: ctx.from?.id,
+      group_id: ctx.chat.id,
+    });
   }
 
-  async reload() {
-    const res = await InfoModel.create({
+  async reload(group_id: number) {
+    return await InfoModel.create({
       currentPidor: null,
       currentCool: null,
+      group_id,
     });
+  }
+
+  async reloadAll() {
+    const groups = await GroupModel.find();
+    for (const group of groups) {
+      await this.reload(group.group_id);
+    }
   }
 }

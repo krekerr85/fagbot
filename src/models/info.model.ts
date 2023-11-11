@@ -4,7 +4,11 @@ const { Schema } = mongoose;
 const infoSchema = new Schema({
   currentPidor: Number,
   currentCool: Number,
-  currentGnida: Number,
+  group_id: {
+    type: Schema.Types.ObjectId,
+    unique: true,
+    ref: "Group",
+  },
   date_created: { type: Date, default: Date.now },
 
 });
