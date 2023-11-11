@@ -219,7 +219,7 @@ export class TelegramService {
           message += `${cnt++}) @${user?.username} - ${cool[1]} раз(а)\n`;
         }
       
-        ctx.reply("Результаты 🌈КРАСАВЧИК Дня\n" + message);
+        ctx.reply("🎉 Результаты Красавчик Дня\n" + message);
       });
 
     this.bot.command("pidorstats", async (ctx) => {
