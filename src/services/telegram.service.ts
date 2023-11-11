@@ -186,17 +186,40 @@ export class TelegramService {
     // });
 
     this.bot.command("stats", async (ctx) => {
-      ctx.reply("Функция в разработке!");
+      ctx.reply("Результаты 🌈ПИДОР Дня");
     });
 
     this.bot.command("pidorstats", async (ctx) => {
-      ctx.reply("Функция в разработке!");
+      const pidors: { [key: number]: number } = {};
+      const infoList: number[] = await InfoModel.find({}, "currentPidor");
+
+      infoList.forEach((info) => {
+        if (pidors.hasOwnProperty(info)) {
+          pidors[info] += 1;
+        } else {
+          pidors[info] = 1;
+        }
+      });
+      const pidorsArray = Object.entries(pidors);
+
+      // Sort the array based on the values in descending order
+      pidorsArray.sort((a, b) => b[1] - a[1]);
+
+      // Convert the sorted array back into an object
+      let message = '';
+      let cnt = 1;
+      for(const pidor of pidorsArray) {
+        const user = await UserModel.findOne({ user_id: pidor[0] });
+        message += (`${cnt++})@${user?.username} - ${pidor[1]} раз(а)\n`);
+      }
+
+        ctx.reply("Результаты 🌈ПИДОР Дня\n" + message);
+
+
+      this.bot.command("gnidastats", async (ctx) => {
+          ctx.reply("Функция в разработке!");
+      });
     });
-
-    // this.bot.command("gnidastats", async (ctx) => {
-    //     ctx.reply("Функция в разработке!");
-    // });
-
     this.bot.on("callback_query", async (ctx) => {
       //await this.updateState(ctx);
     });
