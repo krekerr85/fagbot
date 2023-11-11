@@ -186,8 +186,41 @@ export class TelegramService {
     // });
 
     this.bot.command("stats", async (ctx) => {
-      ctx.reply("Результаты 🌈ПИДОР Дня");
-    });
+        const cools: { [key: number]: number } = {};
+        const infoList: (number | null | undefined)[] = (
+          await InfoModel.find({}, "currentCool")
+        )
+          .map((info) => info.currentCool)
+          .filter(
+            (value) =>
+              typeof value === "number" && value !== null && value !== undefined
+          );
+      
+        infoList.forEach((info) => {
+          if (info) {
+            if (cools.hasOwnProperty(info)) {
+              cools[info] += 1;
+            } else {
+              cools[info] = 1;
+            }
+          }
+        });
+      
+        const coolsArray = Object.entries(cools);
+      
+        // Sort the array based on the values in descending order
+        coolsArray.sort((a, b) => b[1] - a[1]);
+      
+        // Convert the sorted array back into an object
+        let message = "";
+        let cnt = 1;
+        for (const cool of coolsArray) {
+          const user = await UserModel.findOne({ user_id: cool[0] });
+          message += `${cnt++}) @${user?.username} - ${cool[1]} раз(а)\n`;
+        }
+      
+        ctx.reply("Результаты 🌈КРАСАВЧИК Дня\n" + message);
+      });
 
     this.bot.command("pidorstats", async (ctx) => {
       const pidors: { [key: number]: number } = {};
@@ -219,7 +252,7 @@ export class TelegramService {
       let cnt = 1;
       for (const pidor of pidorsArray) {
         const user = await UserModel.findOne({ user_id: pidor[0] });
-        message += `${cnt++})@${user?.username} - ${pidor[1]} раз(а)\n`;
+        message += `${cnt++}) @${user?.username} - ${pidor[1]} раз(а)\n`;
       }
 
       ctx.reply("Результаты 🌈ПИДОР Дня\n" + message);
