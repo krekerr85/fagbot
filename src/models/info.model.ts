@@ -5,7 +5,7 @@ const infoSchema = new Schema({
   currentPidor: Number,
   currentCool: Number,
   group_id: {
-    type: Schema.Types.ObjectId,
+    type: Number,
     unique: true,
     ref: "Group",
   },
