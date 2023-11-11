@@ -203,7 +203,7 @@ export class TelegramService {
     if (!info) {
       return false;
     }
-    if (info?.currentPidor) {
+    if (!info?.currentPidor) {
       return false;
     }
     const user = await UserModel.findOne({ user_id: info.currentPidor });
@@ -227,7 +227,7 @@ export class TelegramService {
     if (!info) {
       return false;
     }
-    if (info?.currentCool) {
+    if (!info?.currentCool) {
       return false;
     }
     const user = await UserModel.findOne({ user_id: info.currentCool });

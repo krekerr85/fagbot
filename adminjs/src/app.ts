@@ -41,7 +41,7 @@ const start = async () => {
   });
   const adminOptions = {
     resources: [UserModel],
-    rootPath: "/admin_ivan",
+    rootPath: "/admin",
   };
   const admin = new AdminJS(adminOptions);
 
