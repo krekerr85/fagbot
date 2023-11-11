@@ -275,7 +275,7 @@ export class TelegramService {
     } else {
       users = await UserModel.find({
         group_id,
-        _id: { $ne:currentCoolUser._id},
+        user_id: { $ne:currentCoolUser.currentCool},
       });
     }
 
@@ -351,7 +351,7 @@ export class TelegramService {
     } else {
       users = await UserModel.find({
         group_id,
-        _id: { $ne:currentPidorUser._id},
+        user_id: { $ne:currentPidorUser.currentPidor},
       });
     }
 
