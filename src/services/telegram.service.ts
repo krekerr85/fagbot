@@ -268,26 +268,30 @@ export class TelegramService {
   }
   async getRandomPidor(group_id: number) {
     const currentCoolUser = await InfoModel.findOne({
-      currentCool: true,
-      group_id,
-    });
-    if (!currentCoolUser) {
-      return null;
-    }
-    const users = await UserModel.find({
-      group_id,
-      _id: { $nin: currentCoolUser._id },
-    });
-
-    if (users.length === 0) {
-      // Handle case when no eligible users are found
-      return null;
-    }
-
-    const randomIndex = Math.floor(Math.random() * users.length);
-    const randomUser = users[randomIndex];
-
-    return randomUser;
+        currentCool: true,
+        group_id,
+      });
+      let users;
+      if (!currentCoolUser) {
+        const allUsers = await UserModel.find({ group_id });
+        users = allUsers;
+      } else {
+        users = await UserModel.find({
+          group_id,
+          _id: currentCoolUser._id,
+        });
+      }
+  
+      if (users.length === 0) {
+        console.log("users", users);
+        // Handle case when no eligible users are found
+        return null;
+      }
+  
+      const randomIndex = Math.floor(Math.random() * users.length);
+      const randomUser = users[randomIndex];
+  
+      return randomUser;
   }
   async getPidorOfTheDay(group_id: number) {
     const user = await UserModel.findOne({ role: "pidor", group_id });
@@ -331,15 +335,19 @@ export class TelegramService {
       currentPidor: true,
       group_id,
     });
+    let users;
     if (!currentPidorUser) {
-      return null;
+      const allUsers = await UserModel.find({ group_id });
+      users = allUsers;
+    } else {
+      users = await UserModel.find({
+        group_id,
+        _id: currentPidorUser._id,
+      });
     }
-    const users = await UserModel.find({
-      group_id,
-      _id: { $nin: currentPidorUser._id },
-    });
 
     if (users.length === 0) {
+      console.log("users", users);
       // Handle case when no eligible users are found
       return null;
     }
