@@ -10,21 +10,19 @@ export class TelegramService {
   }
 
   async init() {
-    const cronJob = cron.schedule("* * * * *", async () => {
-      console.log("hello");
-      const groups = await GroupModel.find();
-      console.log(groups);
-      for (const group of groups) {
-        console.log(group);
-        const a = await this.addNewDayInfo(group.group_id);
-        console.log(a);
-        const b = await this.bot.telegram.sendMessage(
-          group.group_id,
-          "Новый день!"
-        );
-        console.log(b);
+    const cronJob = cron.schedule(
+      "0 0 * * *",
+      async () => {
+        const groups = await GroupModel.find();
+        for (const group of groups) {
+          await this.addNewDayInfo(group.group_id);
+          await this.bot.telegram.sendMessage(group.group_id, "Новый день!");
+        }
+      },
+      {
+        timezone: "Europe/Moscow",
       }
-    });
+    );
     this.bot.start(async (ctx) => {
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
