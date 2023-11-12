@@ -10,7 +10,21 @@ export class TelegramService {
   }
 
   async init() {
-    cron.schedule("* * * * *", this.reloadAll);
+    const cronJob = cron.schedule("* * * * *", async () => {
+      console.log("hello");
+      const groups = await GroupModel.find();
+      console.log(groups);
+      for (const group of groups) {
+        console.log(group);
+        const a = await this.addNewDayInfo(group.group_id);
+        console.log(a);
+        const b = await this.bot.telegram.sendMessage(
+          group.group_id,
+          "Новый день!"
+        );
+        console.log(b);
+      }
+    });
     this.reloadAll();
     this.bot.start(async (ctx) => {
       await ctx.reply(
@@ -382,29 +396,17 @@ export class TelegramService {
   }
 
   async addNewDayInfo(group_id: number) {
-    try{
+    try {
       const res = await InfoModel.create({
         currentPidor: null,
         currentCool: null,
         group_id,
       });
       return res;
-    }catch(e){
+    } catch (e) {
       console.log(e);
     }
-    
   }
 
-  async reloadAll() {
-    console.log('hello')
-    const groups = await GroupModel.find();
-    console.log(groups)
-    for (const group of groups) {
-      console.log(group)
-      const a = await this.addNewDayInfo(group.group_id);
-      console.log(a)
-      const b = await this.bot.telegram.sendMessage(group.group_id, "Новый день!");
-      console.log(b)
-    }
-  }
+  async reloadAll() {}
 }
