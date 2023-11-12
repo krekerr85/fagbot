@@ -19,3 +19,15 @@ export function markdownV2Format(str: string) {
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export function getFullName(first_name: string, last_name: string) {
+  let fullName = "";
+  if (first_name && last_name) {
+    fullName = `${last_name} ${first_name}`;
+  } else if (first_name) {
+    fullName = first_name;
+  } else if (last_name) {
+    fullName = last_name;
+  }
+  return fullName;
+}

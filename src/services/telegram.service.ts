@@ -1,5 +1,5 @@
 import { botT, ctxT } from "../types/telegramType";
-import { sleep } from "../utils/functions";
+import { getFullName, sleep } from "../utils/functions";
 import { UserModel } from "../models/user.model";
 import { InfoModel } from "../models/info.model";
 import cron from "node-cron";
@@ -40,8 +40,6 @@ export class TelegramService {
       await this.createGroup(ctx.chat);
     });
 
-    setInterval(async () => {}, 60 * 60 * 1000);
-
     this.bot.command("reg", async (ctx) => {
       await this.createUser(ctx);
       ctx.reply("Отлично, ты в игре");
@@ -80,26 +78,15 @@ export class TelegramService {
         await sleep(2000);
         ctx.reply("СЕКТОР ПРИЗ НА БАРАБАНЕ 🎯");
         await sleep(2000);
-        let fullName;
-        if (first_name && last_name) {
-          fullName = `${last_name} ${first_name}`;
-        } else if (first_name) {
-          fullName = first_name;
-        } else if (last_name) {
-          fullName = last_name;
-        }
+        const fullName = getFullName(last_name, first_name);
+
         ctx.reply(`🎉 Сегодня красавчик дня - ${fullName} (@${username})`);
         return;
       }
+
       const { last_name, first_name, username } = prevCoolDay;
-      let fullName;
-      if (first_name && last_name) {
-        fullName = `${last_name} ${first_name}`;
-      } else if (first_name) {
-        fullName = first_name;
-      } else if (last_name) {
-        fullName = last_name;
-      }
+      const fullName = getFullName(last_name, first_name);
+
       ctx.reply(`🎉 Сегодня красавчик дня - ${fullName} (@${username})`);
       return;
     });
@@ -133,26 +120,14 @@ export class TelegramService {
         ctx.reply("1 - твой профиль в соцсетях проанализирован 🙀");
         await sleep(2000);
 
-        let fullName;
-        if (first_name && last_name) {
-          fullName = `${last_name} ${first_name}`;
-        } else if (first_name) {
-          fullName = first_name;
-        } else if (last_name) {
-          fullName = last_name;
-        }
+        const fullName = getFullName(last_name, first_name);
         ctx.reply(`🎉 Сегодня ПИДОР 🌈 дня - ${fullName} (@${username})`);
         return;
       }
+
       const { last_name, first_name, username } = prevPidorDay;
-      let fullName;
-      if (first_name && last_name) {
-        fullName = `${last_name} ${first_name}`;
-      } else if (first_name) {
-        fullName = first_name;
-      } else if (last_name) {
-        fullName = last_name;
-      }
+      const fullName = getFullName(last_name, first_name);
+
       ctx.reply(`🎉 Сегодня ПИДОР 🌈 дня - ${fullName} (@${username})`);
       return;
     });
@@ -180,10 +155,8 @@ export class TelegramService {
 
       const coolsArray = Object.entries(cools);
 
-      // Sort the array based on the values in descending order
       coolsArray.sort((a, b) => b[1] - a[1]);
 
-      // Convert the sorted array back into an object
       let message = "";
       let cnt = 1;
       for (const cool of coolsArray) {
@@ -241,7 +214,7 @@ export class TelegramService {
           group_name: chat.title,
           date_created: new Date(),
         });
-        this.reload(chat.id);
+        this.addNewDayInfo(chat.id);
       }
     }
   }
@@ -275,7 +248,7 @@ export class TelegramService {
     } else {
       users = await UserModel.find({
         group_id,
-        user_id: { $ne:currentCoolUser.currentCool},
+        user_id: { $ne: currentCoolUser.currentCool },
       });
     }
 
@@ -351,7 +324,7 @@ export class TelegramService {
     } else {
       users = await UserModel.find({
         group_id,
-        user_id: { $ne:currentPidorUser.currentPidor},
+        user_id: { $ne: currentPidorUser.currentPidor },
       });
     }
 
@@ -374,6 +347,9 @@ export class TelegramService {
   }
 
   async createUser(ctx: any) {
+    if (!ctx?.chat) {
+      return;
+    }
     try {
       // Проверяем, существует ли пользователь с такими данными
       const existingUser = await UserModel.findOne({
@@ -407,7 +383,7 @@ export class TelegramService {
     });
   }
 
-  async reload(group_id: number) {
+  async addNewDayInfo(group_id: number) {
     return await InfoModel.create({
       currentPidor: null,
       currentCool: null,
@@ -418,7 +394,7 @@ export class TelegramService {
   async reloadAll() {
     const groups = await GroupModel.find();
     for (const group of groups) {
-      await this.reload(group.group_id);
+      await this.addNewDayInfo(group.group_id);
     }
   }
 }
