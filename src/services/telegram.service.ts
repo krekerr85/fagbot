@@ -10,9 +10,7 @@ export class TelegramService {
   }
 
   async init() {
-    cron.schedule("* * * * *", this.reloadAll, {
-      timezone: "Europe/Moscow",
-    });
+    cron.schedule("* * * * *", this.reloadAll);
 
     this.bot.start(async (ctx) => {
       await ctx.reply(
@@ -392,6 +390,7 @@ export class TelegramService {
   }
 
   async reloadAll() {
+    console.log('hello')
     const groups = await GroupModel.find();
     for (const group of groups) {
       await this.addNewDayInfo(group.group_id);
