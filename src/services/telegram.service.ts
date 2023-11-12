@@ -11,7 +11,7 @@ export class TelegramService {
 
   async init() {
     cron.schedule("* * * * *", this.reloadAll);
-
+    this.reloadAll();
     this.bot.start(async (ctx) => {
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
