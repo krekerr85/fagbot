@@ -392,9 +392,12 @@ export class TelegramService {
   async reloadAll() {
     console.log('hello')
     const groups = await GroupModel.find();
+    console.log(groups)
     for (const group of groups) {
-      await this.addNewDayInfo(group.group_id);
-      await this.bot.telegram.sendMessage(group.group_id, "Новый день!");
+      const a = await this.addNewDayInfo(group.group_id);
+      console.log(a)
+      const b = await this.bot.telegram.sendMessage(group.group_id, "Новый день!");
+      console.log(b)
     }
   }
 }
