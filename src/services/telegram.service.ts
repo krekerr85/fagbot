@@ -10,7 +10,7 @@ export class TelegramService {
   }
 
   async init() {
-    cron.schedule("1 41 * * *", this.reloadAll, {
+    cron.schedule("42 1 * * *", this.reloadAll, {
       timezone: "Europe/Moscow",
     });
 
