@@ -382,11 +382,17 @@ export class TelegramService {
   }
 
   async addNewDayInfo(group_id: number) {
-    return await InfoModel.create({
-      currentPidor: null,
-      currentCool: null,
-      group_id,
-    });
+    try{
+      const res = await InfoModel.create({
+        currentPidor: null,
+        currentCool: null,
+        group_id,
+      });
+      return res;
+    }catch(e){
+      console.log(e);
+    }
+    
   }
 
   async reloadAll() {
