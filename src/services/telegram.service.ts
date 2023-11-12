@@ -25,7 +25,6 @@ export class TelegramService {
         console.log(b);
       }
     });
-    this.reloadAll();
     this.bot.start(async (ctx) => {
       await ctx.reply(
         "Здорова, пидоры и красавчики! Приятно присоединиться к вашей беседе!"
