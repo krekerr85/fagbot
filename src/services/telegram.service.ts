@@ -400,6 +400,7 @@ export class TelegramService {
     const groups = await GroupModel.find();
     console.log(groups)
     for (const group of groups) {
+      console.log(group)
       const a = await this.addNewDayInfo(group.group_id);
       console.log(a)
       const b = await this.bot.telegram.sendMessage(group.group_id, "Новый день!");
