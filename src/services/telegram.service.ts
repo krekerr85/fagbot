@@ -395,6 +395,7 @@ export class TelegramService {
     const groups = await GroupModel.find();
     for (const group of groups) {
       await this.addNewDayInfo(group.group_id);
+      await this.bot.telegram.sendMessage(group.group_id, "Новый день!");
     }
   }
 }
