@@ -6,7 +6,7 @@ const infoSchema = new Schema({
   currentCool: Number,
   group_id: {
     type: Number,
-    unique: true,
+    required: true,
     ref: "Group",
   },
   date_created: { type: Date, default: Date.now },
